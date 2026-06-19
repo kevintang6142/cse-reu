@@ -11,7 +11,7 @@ Options:
     --base   BASE_MODEL   HuggingFace model ID for the base model
                           (default: Qwen/Qwen3.5-9B)
     --sft    SFT_PATH     Path to LoRA adapters or merged fine-tuned model
-                          (default: $SSD_ROOT/models/qwen3.5-sft-nodaicwoz/lora-adapters)
+                          (default: $SSD_ROOT/models/qwen3.5-sft-new/lora-adapters)
     --turns  N            Max turns per session (default: unlimited)
     --save   FILE         Save transcript to FILE as JSONL when done
 """
@@ -170,14 +170,14 @@ def load_model(model_path: str, base_model_name: str | None = None):
 # ── CLI ───────────────────────────────────────────────────────────────────────
 def build_parser() -> argparse.ArgumentParser:
     ssd_root = os.environ.get("SSD_ROOT", "/tmp")
-    default_sft = str(Path(ssd_root) / "models/qwen3.5-sft-assistant-only-small/lora-adapters")
+    default_sft = str(Path(ssd_root) / "models/Qwen3.5-4B-SFT/lora-adapters")
 
     p = argparse.ArgumentParser(
         description="Interactive base-vs-SFT therapist chatbot",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
-    p.add_argument("--base",     default="Qwen/Qwen3.5-9B",  help="Base model ID or path")
+    p.add_argument("--base",     default="Qwen/Qwen3.5-4B",  help="Base model ID or path")
     p.add_argument("--sft",      default=default_sft,         help="SFT model/adapter path")
     p.add_argument("--turns",    type=int, default=0,
                    help="Max turns (0 = unlimited)")

@@ -1,0 +1,48 @@
+Counselor：All right, Melissa, so why don't you tell me a little bit about why you're here today.
+Client：I have trouble with public speaking. That's a big fear of mine.
+Counselor：Okay, tell me a little bit about the feelings that are associated with your fear.
+Client：I get panic attacks which affect me. I can't breathe well. I feel like I'm gonna pass out and I'm jittery. I'm just very, very anxious whenever I think about them, right before I have to do oral presentations. During them, I just feel like I'm gonna keel over. Okay.
+Counselor：Where do you feel like this fear comes from? Is there an instance that occurred that caused you to be afraid or.
+Client：Not really? I've always disliked it, and I've had bad experiences that probably made my fear worse, but it's. It's always been somewhat of a fear of mine since I was a child.
+Counselor：Okay.
+Client：It's the first time I had to try to do it.
+Counselor：Okay, and what exactly is it that you're afraid of with the experience?
+Client：Then I'm gonna embarrass myself by either stuttering or losing my train of thought, something along that line, so.
+SPK_3：Okay.
+Counselor：And if you do get embarrassed, what would that mean? How. How would that make you feel?
+Client：Just stupid.
+Counselor：Okay.
+Client：Just. Just like I couldn't do it.
+Counselor：Stupid person.
+Client：Yes.
+SPK_3：Okay. Okay.
+Counselor：Let me just ask you a little bit about that, I guess. Let me ask you first. Logically, if you made a mistake in a presentation, would that make you feel like you were always going to make mistakes in presentations to follow?
+Client：Yeah, kind of. I mean, I know it's not logical, but that's how I think. I think that it's always going to happen. No matter how well prepared I am for the presentation, it's always going to go wrong somehow.
+Counselor：So you would always go into it feeling like I'm going to mess up? Yes. Okay. Okay. Do you feel like it's logical to assume that just because you make a mistake, everyone's going to remember that? I mean, when someone else makes a mistake in the class, do you remember that?
+Client：No. No, I don't remember it.
+Counselor：Okay, so then do you still feel that it's logical to think that they would remember your mistakes?
+Client：No, it's not logical, I guess, but it's. Again, it's still how I believe. It's still what I believe. I think they're gonna remember it always.
+Counselor：Okay.
+Client：That's what they're gonna think when they see me, that I messed up.
+Counselor：Okay. And also, you know, if people do think that about you, say that they do look at you as stupid or they remember that mistake. Is it logical to think that that makes you stupid, that. That, you know, really does actually make you stupid?
+Client：No, because I said their opinion. It was just in that time and place that I was stupid.
+Counselor：Let me ask you a little bit about the future and this process problem for you. Okay. Where do you feel like, you know, it's going to get you if you continue to have this problem and this fear?
+Client：I think it's going to continue to hold me back because I've gone through great lengths to avoid presenting. I've dropped out of college courses because there was an oral presentation requirement, and I think that could follow me. That kind of behavior, if I keep trying to avoid it, could hurt me in my career. Definitely hold me back.
+Counselor：Okay. And if you continue to feel like you have to be perfect in a presentation, you know, how do you think that will affect your future in this career? Do you think you'll be able to do all the things that you want to?
+Client：No, I still think I'll still try to avoid it as much as possible.
+Counselor：I have a technique that I would like us to try, and I'll give you this. I just want you to work with me to develop a coping statement, and this is something that you could use and practice to help you change your beliefs about giving a presentation and how that will make you feel. It can also be used right before you do give the presentation to maybe try to help you calm down a little bit.
+SPK_3：Okay.
+Counselor：First, let's focus on how you feel when you give a presentation. I know you said you feel stupid, embarrassed. Yes. So let's just state that. Why don't we say if you make a mistake during a presentation, you might feel stupid and embarrassed. Okay. And why don't you just repeat that for me?
+Client：If I make a mistake during a presentation, I might feel stupid and embarrassed.
+Counselor：Okay? Now, obviously you've made mistakes in a presentation before, you said, and you've dealt with that. You got through it. So let's put that in our statement as well. Okay. You might be embarrassed, but you can deal with it.
+Client：Okay?
+Counselor：So why don't you repeat that for me?
+Client：I might be embarrassed, but I can deal with it.
+Counselor：Okay. And then let's go further to say it won't be absolutely terrible and it won't make me a stupid person. Okay. So why don't you just read that whole thing for me?
+Client：Oh, the whole thing.
+Counselor：Sure.
+Client：If I make a mistake during a presentation, I might feel stupid and embarrassed. I might be embarrassed but I can deal with it. It won't be absolutely terrible, and it won't make me a stupid person.
+Counselor：So how do you feel about that? Do you think that that could be helpful for you to change your beliefs?
+Client：I could try it, definitely.
+Counselor：Okay. Well, that sounds great.
+Client：Yes.

@@ -1,0 +1,60 @@
+Counselor：Hello, Carlos. How are you feeling today?
+Client：Feeling terrible. I had a wrestling match last night, and I lost my match again. I should just quit the team. I'm such a bad wrestler.
+Counselor：What do you mean by again?
+Client：I lost my match last week, too. I should just quit the team.
+Counselor：You mean because you lost two matches, it automatically means you're going to lose your next match?
+Client：Well, yes. I am clearly a bad wrestler.
+Counselor：Okay, so losing is not fun. No one likes to lose. But it doesn't mean you're a bad wrestler.
+Client：Yeah, I guess not. But all my other teammates won their matches. It made me feel dumb to be the only one who lost. Like I'm a terrible wrestler. I don't feel like I belong on the team anymore.
+Counselor：Yes, losing is unpleasant. And those two matches weren't your best. Does that mean that you're a bad wrestler?
+Client：Well, I don't know. Maybe not.
+Counselor：How were you doing before you lost those two matches?
+Client：We've only had four matches so far, but I won my first two matches.
+Counselor：Okay, so you started off the season by winning two matches in a row, which means you do know how to wrestle. You just happened to lose two matches in a row, but that's all it was?
+Client：Yeah.
+Counselor：What else are you telling yourself about wrestling?
+Client：Well, I just felt terrible after I lost those two matches, and I was thinking that if I lo. That if I lose my next match, I'm never going to be able to get a scholarship to college.
+Counselor：Hold on a second, Carlos. Let me stop you right there. What if you do lose your next match? What is the worst thing that could happen? Would it be the end of the world?
+Client：Um, no, I guess not. The season just started.
+Counselor：How much longer do you have in the season?
+Client：A few more months.
+Counselor：A few more months? Which means you still have plenty of matches left. So, although losing your next match would be frustrating, you would be okay. The world would not end.
+Client：Yeah, I guess you're right.
+Counselor：Do you enjoy wrestling?
+Client：Yes. Actually, I love wrestling. I've been wrestling since my freshman year.
+Counselor：You've been wrestling for three years, and it is a sport you love participating in. Does it make sense that you said you were going to quit just a few matches into the season?
+Client：No, it really doesn't.
+Counselor：Are you starting to understand what you told yourself about the consequences of losing a few wrestling matches?
+Client：Yes, I guess I am. I told myself that if I lost any matches this season, I'm a bad wrestler. That isn't true. Losing some of my matches doesn't automatically mean I'm a bad wrestler. It's also not the end of the world.
+Counselor：Is that correct information to give yourself?
+Client：No.
+Counselor：Okay, I feel like you're starting to get it now. Let's look at the other things you've been telling yourself about wrestling. What else did you tell yourself?
+Client：Said that if I lost any of my matches, I wouldn't get a wrestling scholarship for college.
+Counselor：Is it a reasonable goal to say you're not going to lose any matches over an entire season?
+Client：No, not really.
+Counselor：You've lost before over the last three years, right? Have you had success in past seasons?
+Client：Yes, I have. I lost a couple of matches last season, but I had a good season overall.
+Counselor：Okay, so you know that losing several matches throughout the course of the season isn't the end of the world. What else have you been telling yourself?
+Client：My parents don't really have the money to pay for my college, so I need to get good grades and do well with wrestling in order to have a better chance at getting a scholarship.
+Counselor：How do you think all that pressure affects you?
+Client：I think about it all the time, which makes it hard for me to focus.
+Counselor：That is a lot to have to deal with. And all that pressure is leading you to tell yourself negative things.
+Client：Yeah, I guess it is.
+Counselor：Have you discussed how you're feeling with your parents?
+Client：No, not really. I don't want to bother them with this.
+Counselor：How does it make you feel to keep all this inside to yourself?
+Client：Definitely not. Great.
+Counselor：Well, of course, junior year is a stressful year. Do you think that all of this stress relates to wrestling at all?
+Client：Yeah, it probably does. I guess I hadn't really thought about it that way. I was having a hard time concentrating during my last two matches. I think it's affecting my performance.
+Counselor：So what are the real reasons you lost those two matches?
+Client：Been under a lot of stress lately. Put more pressure on myself to perform perfectly in wrestling to help me get a scholarship for college. I got so mad about losing that I wasn't thinking straight.
+Counselor：Striving for perfection is unrealistic. Making mistakes or losing a wrestling match in this case, is normal. You learn from it and you keep going.
+Client：Yeah, I guess you're right.
+Counselor：Well, Carlos, we're running out of time for today's session. Before we end, let's go over some of the bad messages you've been telling yourself.
+Client：I lost two matches in a row and I told myself that I was a bad wrestler, that I should just quit the team, and that I wouldn't get a scholarship to college. I thought losing was the end of the world.
+Counselor：And do you still believe those things about yourself?
+Client：No, I don't. I love wrestling and I'm pretty good at it. When I'm focused. It helps to talk about the things that are stressing me out so that I can perform better on the map.
+Counselor：And what will you tell yourself if you lose your next match?
+Client：That it's okay and it's not the end of the world. Doesn't make me a bad wrestler. Plus, there's still plenty of time left in the season to be successful.
+Counselor：Sounds great. Alright, I look forward to seeing you next Tuesday and hearing about how your next match goes.
+Client：Thanks.
