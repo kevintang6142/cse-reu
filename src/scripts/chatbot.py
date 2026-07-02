@@ -20,7 +20,6 @@ import argparse
 import json
 import os
 import re
-import sys
 import textwrap
 from pathlib import Path
 
@@ -101,8 +100,12 @@ def therapist_turn(model, tokenizer, turns: list[dict], max_new_tokens: int = 12
             add_generation_prompt=True,
         )
 
-    # Ensure generation stops at <|im_end|> (end of assistant turn)
-    stop_ids = list({tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|im_end|>")})
+    # Ensure generation stops at <|im_end|> (end of assistant turn).
+    # convert_tokens_to_ids may return None for models without that token; filter it out.
+    stop_ids = [
+        i for i in {tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|im_end|>")}
+        if isinstance(i, int) and i >= 0
+    ]
 
     inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
     with torch.no_grad():
@@ -142,7 +145,7 @@ def load_model(model_path: str, base_model_name: str | None = None):
         from peft import PeftModel  # type: ignore
         if not base_model_name:
             raise ValueError("--base required when loading a PEFT adapter")
-        print(f"  Detected PEFT adapter — loading base + adapter and merging…")
+        print("  Detected PEFT adapter — loading base + adapter and merging…")
         tokenizer = AutoTokenizer.from_pretrained(base_model_name, trust_remote_code=True)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token

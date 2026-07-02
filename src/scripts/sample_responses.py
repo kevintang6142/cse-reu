@@ -1,4 +1,4 @@
-"""Sample 50 random therapist (assistant) responses from the training set."""
+"""Sample a handful of random therapist (assistant) responses from the training set."""
 
 import json
 import random

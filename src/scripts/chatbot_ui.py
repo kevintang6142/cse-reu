@@ -117,7 +117,10 @@ def generate_reply(model, tokenizer, turns: list[dict], max_new_tokens: int = 12
             messages, tokenize=False, add_generation_prompt=True,
         )
 
-    stop_ids = list({tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|im_end|>")})
+    stop_ids = [
+        i for i in {tokenizer.eos_token_id, tokenizer.convert_tokens_to_ids("<|im_end|>")}
+        if isinstance(i, int) and i >= 0
+    ]
     inputs = tokenizer(prompt_text, return_tensors="pt").to(model.device)
 
     with torch.no_grad():
