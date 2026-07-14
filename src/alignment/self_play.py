@@ -835,13 +835,20 @@ async def self_play_iteration(
     model, tokenizer, client: AsyncOpenAI, sem: asyncio.Semaphore,
     vignettes: list[dict], n_refinement_cycles: int,
     therapist_batch_size: int = THERAPIST_BATCH_SIZE,
-) -> tuple[list[dict], list[str]]:
+) -> tuple[list[dict], list[str], list[dict]]:
     """
     Run one full self-play iteration.
-    Returns (final_transcripts, final_critic_raw_responses).
+
+    Returns (final_transcripts, final_critic_raw_responses, all_rounds) where
+    all_rounds is a list of per-round snapshots, each
+    {"round": int, "transcripts": [...], "critiques": [raw_str, ...]} with each
+    transcript ALIGNED to the critique that scored it. Round 0 is the initial
+    generation; the final round is the version returned. SFT uses only the final
+    version; KTO uses every round.
     """
     n = len(vignettes)
     history: list[list[dict]] = [[] for _ in range(n)]
+    all_rounds: list[dict] = []
 
     # ── Initial generation ────────────────────────────────────────────────────
     print(f"\n{'='*60}")
@@ -868,6 +875,9 @@ async def self_play_iteration(
             client, sem, transcripts, vignettes
         )
         last_raw_critiques = raw_critiques
+        # `transcripts` is the exact version that was just critiqued → save the
+        # aligned (transcript, critique) snapshot for this round.
+        all_rounds.append({"round": cycle, "transcripts": transcripts, "critiques": raw_critiques})
         elapsed = time.perf_counter() - t0
         print(f"  Critic feedback done in {elapsed:.1f}s")
 
@@ -898,7 +908,20 @@ async def self_play_iteration(
         elapsed = time.perf_counter() - t0
         print(f"  Regeneration done in {elapsed:.1f}s")
 
-    return transcripts, last_raw_critiques
+    # Critique the FINAL version too. The last regeneration was never scored, so
+    # previously the saved critiques described the second-to-last version. This
+    # closes that gap and gives the final round its own aligned critique.
+    print("\n  Getting critic feedback on FINAL version...")
+    _, final_raw_critiques = await get_all_critic_feedback(
+        client, sem, transcripts, vignettes
+    )
+    all_rounds.append({
+        "round": n_refinement_cycles,
+        "transcripts": transcripts,
+        "critiques": final_raw_critiques,
+    })
+
+    return transcripts, final_raw_critiques, all_rounds
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1034,6 +1057,8 @@ def run_self_play(
     output_jsonl: str | Path,
     output_transcripts: str | Path | None = None,
     output_critiques: str | Path | None = None,
+    output_rounds_transcripts: str | Path | None = None,
+    output_rounds_critiques: str | Path | None = None,
     base_model_name: str = BASE_MODEL_NAME,
     n_vignettes: int = N_VIGNETTES,
     vignette_seed: int | None = None,
@@ -1046,9 +1071,13 @@ def run_self_play(
 
     Args:
         adapter_path: Path to LoRA adapter dir, or None to use base model.
-        output_jsonl: Where to save SFT-format training data.
-        output_transcripts: Where to save raw transcripts (JSONL).
-        output_critiques: Where to save critic judgments (JSONL).
+        output_jsonl: Where to save SFT-format training data (final version only).
+        output_transcripts: Where to save the FINAL raw transcripts (JSONL) — SFT uses these.
+        output_critiques: Where to save the FINAL critic judgments (JSONL), aligned to
+            output_transcripts.
+        output_rounds_transcripts / output_rounds_critiques: Where to save EVERY round's
+            transcript and its aligned critique (initial + each refinement). ~n_vignettes ×
+            (n_refinement_cycles + 1) rows each, index-aligned. KTO consumes these.
         base_model_name: HuggingFace model ID for base model.
         therapist_batch_size: Number of active conversations to generate in each local
             HuggingFace batch. Increase until VRAM becomes the bottleneck.
@@ -1079,7 +1108,7 @@ def run_self_play(
     # Run
     print(f"\n[Self-Play] Starting self-play ({n_refinement_cycles} refinement cycles)...")
     t0 = time.perf_counter()
-    transcripts, raw_critiques = asyncio.run(
+    transcripts, raw_critiques, all_rounds = asyncio.run(
         self_play_iteration(
             model, tokenizer, client, sem, vignettes, n_refinement_cycles, therapist_batch_size
         )
@@ -1126,6 +1155,30 @@ def run_self_play(
                 f.write(json.dumps(record) + "\n")
         print(f"[Self-Play] Critiques saved → {output_critiques}")
 
+    # Save EVERY round (initial + refinements + final), transcript aligned to its
+    # own critique. Two index-aligned files so build_kto_records can consume them
+    # directly. SFT ignores these; KTO uses them for the full quality gradient.
+    if output_rounds_transcripts and output_rounds_critiques:
+        ort = Path(output_rounds_transcripts)
+        orc = Path(output_rounds_critiques)
+        ort.parent.mkdir(parents=True, exist_ok=True)
+        orc.parent.mkdir(parents=True, exist_ok=True)
+        n_rows = 0
+        with open(ort, "w") as ft, open(orc, "w") as fc:
+            for rd in all_rounds:
+                r = rd["round"]
+                for t, raw in zip(rd["transcripts"], rd["critiques"]):
+                    ft.write(json.dumps(
+                        {"vignette": t["vignette"], "round": r, "turns": t["turns"]}
+                    ) + "\n")
+                    fc.write(json.dumps(
+                        {"vignette": t["vignette"], "round": r,
+                         "raw_critique": raw, "parsed": parse_critic_json(raw)}
+                    ) + "\n")
+                    n_rows += 1
+        print(f"[Self-Play] All rounds saved → {ort} + {orc} "
+              f"({n_rows} dialogues across {len(all_rounds)} rounds)")
+
     # Cleanup
     del model
     torch.cuda.empty_cache()
@@ -1139,6 +1192,10 @@ if __name__ == "__main__":
     parser.add_argument("--output-jsonl", required=True, help="Output SFT JSONL path")
     parser.add_argument("--output-transcripts", default=None, help="Output transcripts JSONL path")
     parser.add_argument("--output-critiques", default=None, help="Output critic judgments JSONL path")
+    parser.add_argument("--output-rounds-transcripts", default=None,
+                        help="Output ALL-rounds transcripts JSONL (initial+refinements+final)")
+    parser.add_argument("--output-rounds-critiques", default=None,
+                        help="Output ALL-rounds critiques JSONL, aligned to rounds transcripts")
     parser.add_argument("--base-model", default=BASE_MODEL_NAME)
     parser.add_argument("--n-vignettes", type=int, default=N_VIGNETTES,
                         help="Distinct CACTUS people to sample for this iteration")
@@ -1159,6 +1216,8 @@ if __name__ == "__main__":
         output_jsonl=args.output_jsonl,
         output_transcripts=args.output_transcripts,
         output_critiques=args.output_critiques,
+        output_rounds_transcripts=args.output_rounds_transcripts,
+        output_rounds_critiques=args.output_rounds_critiques,
         base_model_name=args.base_model,
         n_vignettes=args.n_vignettes,
         vignette_seed=args.vignette_seed,
