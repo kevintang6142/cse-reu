@@ -447,6 +447,7 @@ def therapist_turn_batch(
     turns_batch: list[list[dict]],
     system_prompts: list[str],
     batch_size: int = THERAPIST_BATCH_SIZE,
+    temperature: float = 0.7,
 ) -> list[str]:
     """Generate multiple therapist utterances in batched GPU calls.
 
@@ -502,7 +503,7 @@ def therapist_turn_batch(
                     **inputs,
                     max_new_tokens=THERAPIST_MAX_TOKENS,
                     do_sample=True,
-                    temperature=0.7,
+                    temperature=temperature,
                     top_p=0.9,
                     top_k=50,
                     repetition_penalty=REPETITION_PENALTY,
@@ -548,6 +549,7 @@ def append_batched_therapist_turns(
     active: list[int],
     system_prompt: str | list[str],
     therapist_batch_size: int = THERAPIST_BATCH_SIZE,
+    temperature: float = 0.7,
 ) -> None:
     """Append one therapist turn to every active conversation using batched inference."""
     if not active:
@@ -560,6 +562,7 @@ def append_batched_therapist_turns(
         turns_batch,
         prompt_batch,
         batch_size=therapist_batch_size,
+        temperature=temperature,
     )
     for idx, t_msg in zip(active, responses):
         all_turns[idx].append({"role": "therapist", "content": t_msg})
