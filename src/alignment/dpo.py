@@ -35,15 +35,18 @@ LORA_R         = 16
 LORA_ALPHA     = 32
 LORA_DROPOUT   = 0.05
 NUM_EPOCHS     = 1
-# DPO forwards chosen+rejected together (2 sequences per record through policy
-# and reference), so batch×seq drives peak memory much like KTO's KL pass did.
-BATCH_SIZE     = 2
-GRAD_ACCUM     = 8
+# DPO forwards chosen+rejected CONCATENATED (2 sequences per record) through both
+# policy and reference, and accelerate casts the full-vocab logits (Qwen ~250k)
+# to fp32 — batch_size 2 meant 4×~3k-token sequences and an 11GiB logit cast that
+# OOMed the 48GB card. batch 1 halves the peak; grad_accum 16 keeps the same
+# effective batch of 16.
+BATCH_SIZE     = 1
+GRAD_ACCUM     = 16
 LR             = 5e-6     # much lower than SFT
 BETA           = 0.1
-# Matches self_play.MAX_SEQ_LENGTH (4096). truncation_mode="keep_end" keeps the
-# most recent history when a prompt is over-length; completions are single
-# therapist turns (≤256 gen tokens) so they always fit.
+# Matches self_play.MAX_SEQ_LENGTH (4096). Over-length prompts are trimmed
+# client-side (oldest turns dropped, system prompt + recent history + completion
+# kept) so TRL's sequence truncation never fires.
 MAX_SEQ_LENGTH = 4096
 
 
@@ -61,6 +64,37 @@ def _strip_meta(records: list[dict]) -> list[dict]:
     """Drop bookkeeping fields self_play_dpo attaches — TRL only needs
     prompt/chosen/rejected (+ chat_template_kwargs)."""
     return [{k: v for k, v in r.items() if k != "meta"} for r in records]
+
+
+def _truncate_prompts(records: list[dict], tokenizer, max_length: int) -> list[dict]:
+    """Trim over-length prompts by dropping the OLDEST user+assistant exchange
+    (keeping the system prompt) until prompt + longest completion fit in
+    max_length. Dropping exchanges pairwise preserves role alternation. This
+    keeps the completion and recent history intact, so TRL's own sequence
+    truncation (which would cut the completion tail) never triggers."""
+    margin = 64  # template/special-token headroom
+
+    def n_tokens(messages):
+        text = tokenizer.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=False,
+            enable_thinking=False,
+        )
+        return len(tokenizer.encode(text))
+
+    n_trimmed = 0
+    for r in records:
+        completion = max(r["chosen"], r["rejected"], key=lambda c: len(c[0]["content"]))
+        trimmed = False
+        while (len(r["prompt"]) > 3
+               and n_tokens(r["prompt"] + completion) + margin > max_length):
+            # prompt = [system, user, assistant, user, ...] — drop the oldest
+            # user+assistant exchange after the system message.
+            r["prompt"] = [r["prompt"][0]] + r["prompt"][3:]
+            trimmed = True
+        n_trimmed += trimmed
+    if n_trimmed:
+        print(f"[DPO] Trimmed oldest turns from {n_trimmed}/{len(records)} over-length prompts")
+    return records
 
 
 def run_dpo(
@@ -89,14 +123,17 @@ def run_dpo(
     print(f"[DPO] Train pairs: {len(train_records)}  Val pairs: {len(val_records)}")
     if not train_records:
         raise ValueError("No DPO training pairs.")
-    train_dataset = Dataset.from_list(train_records)
-    val_dataset = Dataset.from_list(val_records)
 
     # ── Tokenizer & model (QLoRA 4-bit) ───────────────────────────────────────
     tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
     tokenizer.padding_side = "right"
+
+    train_records = _truncate_prompts(train_records, tokenizer, max_seq_length)
+    val_records = _truncate_prompts(val_records, tokenizer, max_seq_length)
+    train_dataset = Dataset.from_list(train_records)
+    val_dataset = Dataset.from_list(val_records)
 
     dtype = torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
     bnb_config = BitsAndBytesConfig(
@@ -127,6 +164,12 @@ def run_dpo(
     )
 
     use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
+
+    # 10% warmup, expressed in steps (warmup_ratio is deprecated in transformers v5)
+    effective_batch = batch_size * grad_accum
+    steps_per_epoch = (len(train_records) + effective_batch - 1) // effective_batch
+    warmup_steps = max(1, int(0.1 * steps_per_epoch * num_epochs))
+
     dpo_config = DPOConfig(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
@@ -137,7 +180,7 @@ def run_dpo(
         beta=beta,
         optim="paged_adamw_8bit",
         lr_scheduler_type="cosine",
-        warmup_ratio=0.1,
+        warmup_steps=warmup_steps,
         logging_steps=10,
         save_strategy="steps",
         save_steps=20,
@@ -149,7 +192,6 @@ def run_dpo(
         gradient_checkpointing=True,
         report_to="none",
         max_length=max_seq_length,
-        truncation_mode="keep_end",
     )
 
     # ref_model=None + peft_config: DPO uses the adapter-disabled base as reference,

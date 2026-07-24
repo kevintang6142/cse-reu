@@ -125,6 +125,11 @@ def run_sft(
     # ── Train ─────────────────────────────────────────────────────────────────
     use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported()
 
+    # 10% warmup, expressed in steps (warmup_ratio is deprecated in transformers v5)
+    effective_batch = batch_size * grad_accum
+    steps_per_epoch = (len(train_dataset) + effective_batch - 1) // effective_batch
+    warmup_steps = max(1, int(0.1 * steps_per_epoch * num_epochs))
+
     sft_config = SFTConfig(
         output_dir=str(output_dir),
         num_train_epochs=num_epochs,
@@ -133,7 +138,7 @@ def run_sft(
         learning_rate=lr,
         optim="paged_adamw_8bit",
         lr_scheduler_type="cosine",
-        warmup_ratio=0.1,
+        warmup_steps=warmup_steps,
         logging_steps=10,
         save_strategy="steps",
         save_steps=10,

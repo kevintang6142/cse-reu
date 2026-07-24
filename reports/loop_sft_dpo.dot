@@ -1,0 +1,62 @@
+digraph loop_sft_dpo {
+    // ── SFT + DPO iterated training loop (poster style, symmetric) ────────
+    layout=neato;
+    bgcolor="white";
+    fontname="Helvetica";
+    pad=0.15;
+    splines=curved;
+    node [fontname="Helvetica", shape=none, margin=0];
+    edge [color="#16244f", penwidth=2.4, arrowsize=0.9];
+
+    // Stages pinned at compass points around the origin: 1=N, 2=E, 3=S, 4=W.
+    roleplay1 [pos="0,1.95!", label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" STYLE="ROUNDED" BGCOLOR="#eaf1fb" COLOR="#1a3d7c">
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="13" COLOR="#16244f"><B>1 · ROLEPLAY</B></FONT></TD></TR>
+        <TR>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">Generate<BR/>Dialogues</FONT></TD>
+          <TD><FONT POINT-SIZE="11" COLOR="#16244f"><B>→</B></FONT></TD>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">Critic<BR/>Evaluation</FONT></TD>
+          <TD><FONT POINT-SIZE="11" COLOR="#16244f"><B>→</B></FONT></TD>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">Refine with<BR/>Feedback</FONT></TD>
+        </TR>
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="10" COLOR="#5a6a8a">←──────────────────────────</FONT></TD></TR>
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="9" COLOR="#5a6a8a">2 refinement cycles · 300 vignettes</FONT></TD></TR>
+      </TABLE>>];
+
+    sft [pos="3.55,0!", label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" STYLE="ROUNDED" BGCOLOR="#f6f0fb" COLOR="#5e35b1">
+        <TR><TD><FONT POINT-SIZE="13" COLOR="#4a148c"><B>2 · SFT TRAINING</B></FONT></TD></TR>
+        <TR><TD><FONT POINT-SIZE="9" COLOR="#6a4f8a">self-play + real corpus<BR/>QLoRA · merge</FONT></TD></TR>
+      </TABLE>>];
+
+    roleplay2 [pos="0,-1.95!", label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="5" STYLE="ROUNDED" BGCOLOR="#eaf1fb" COLOR="#1a3d7c">
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="13" COLOR="#16244f"><B>3 · BRANCHING ROLEPLAY</B></FONT></TD></TR>
+        <TR>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">Branch K=3<BR/>per Turn</FONT></TD>
+          <TD><FONT POINT-SIZE="11" COLOR="#16244f"><B>→</B></FONT></TD>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">Rollout to<BR/>Session End</FONT></TD>
+          <TD><FONT POINT-SIZE="11" COLOR="#16244f"><B>→</B></FONT></TD>
+          <TD BGCOLOR="#16244f" STYLE="ROUNDED"><FONT POINT-SIZE="10" COLOR="white">CTRS-R<BR/>Score</FONT></TD>
+        </TR>
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="10" COLOR="#5a6a8a">←──────── next turn ────────</FONT></TD></TR>
+        <TR><TD COLSPAN="5"><FONT POINT-SIZE="9" COLOR="#5a6a8a">best vs worst rollout → pair · 100 vignettes</FONT></TD></TR>
+      </TABLE>>];
+
+    dpo [pos="-3.55,0!", label=<
+      <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="6" STYLE="ROUNDED" BGCOLOR="#fdf0ee" COLOR="#c62828">
+        <TR><TD COLSPAN="3"><FONT POINT-SIZE="13" COLOR="#b71c1c"><B>4 · DPO TRAINING</B></FONT></TD></TR>
+        <TR>
+          <TD BORDER="1" STYLE="ROUNDED" BGCOLOR="#dcedc8" COLOR="#2e7d32" CELLPADDING="6"><FONT POINT-SIZE="10" COLOR="#1b5e20"><B>chosen</B><BR/><FONT POINT-SIZE="8">best rollout</FONT></FONT></TD>
+          <TD><FONT POINT-SIZE="12" COLOR="#b71c1c"><B>&gt;</B></FONT></TD>
+          <TD BORDER="1" STYLE="ROUNDED" BGCOLOR="#ffcdd2" COLOR="#c62828" CELLPADDING="6"><FONT POINT-SIZE="10" COLOR="#b71c1c"><B>rejected</B><BR/><FONT POINT-SIZE="8">worst rollout</FONT></FONT></TD>
+        </TR>
+        <TR><TD COLSPAN="3"><FONT POINT-SIZE="9" COLOR="#a05252">same-context turn pairs · ref = SFT policy</FONT></TD></TR>
+      </TABLE>>];
+
+    // Clockwise ring, fixed ports so the arcs are mirror-symmetric.
+    roleplay1:e -> sft:n;
+    sft:s -> roleplay2:e;
+    roleplay2:w -> dpo:s;
+    dpo:n -> roleplay1:w;
+}

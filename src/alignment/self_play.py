@@ -357,7 +357,7 @@ def load_therapist_model(model_path: str, base_model_name: str | None = None):
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         base = AutoModelForCausalLM.from_pretrained(
-            base_model_name, torch_dtype=dtype, device_map="auto", trust_remote_code=True
+            base_model_name, dtype=dtype, device_map="auto", trust_remote_code=True
         )
         model = PeftModel.from_pretrained(base, model_path)
         model = model.merge_and_unload()
@@ -367,7 +367,7 @@ def load_therapist_model(model_path: str, base_model_name: str | None = None):
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         model = AutoModelForCausalLM.from_pretrained(
-            model_path, torch_dtype=dtype, device_map="auto", trust_remote_code=True
+            model_path, dtype=dtype, device_map="auto", trust_remote_code=True
         )
 
     model.config.pad_token_id = tokenizer.pad_token_id

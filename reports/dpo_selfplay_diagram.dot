@@ -1,0 +1,73 @@
+digraph dpo_selfplay {
+    // ── Branching self-play for turn-level DPO ────────────────────────────
+    rankdir=TB;
+    bgcolor="white";
+    fontname="Helvetica";
+    pad=0.2;
+    nodesep=0.35;
+    ranksep=0.4;
+    splines=ortho;
+
+    node [fontname="Helvetica", fontsize=11, shape=box,
+          style="rounded,filled", color="#333333", penwidth=1.2,
+          margin="0.22,0.12"];
+    edge [fontname="Helvetica", fontsize=9, color="#555555",
+          arrowsize=0.7, penwidth=1.1];
+
+    start [width=3.6, label="Start session: system prompt + CACTUS vignette",
+           fillcolor="#e8eaf6", color="#3f51b5"];
+
+    decision [width=3.6, label="Therapist decision point (history frozen)",
+              fillcolor="#e3f2fd", color="#1976d2", penwidth=1.6];
+
+    branch [width=3.6, label="Sample K = 3 candidate replies\nT = 1.0 · dedupe identical",
+            fillcolor="#e3f2fd", color="#1976d2"];
+
+    subgraph cluster_rollouts {
+        label=" rollout each candidate to session end · T = 0.7 ";
+        labelloc="b"; labeljust="r";
+        fontname="Helvetica"; fontsize=10; fontcolor="#00695c";
+        style="rounded,dashed"; color="#26a69a"; bgcolor="#f1faf9";
+
+        r1 [label="rollout 1\npatient → therapist → …", fillcolor="#e0f2f1", color="#00897b"];
+        r2 [label="rollout 2\npatient → therapist → …", fillcolor="#e0f2f1", color="#00897b"];
+        r3 [label="rollout 3\npatient → therapist → …", fillcolor="#e0f2f1", color="#00897b"];
+    }
+
+    judge [width=3.6, label="CTRS-R critic scores each rollout (0–33)\nrepetition collapse → forced worst",
+           fillcolor="#fff8e1", color="#f9a825"];
+
+    gate [label="best − worst ≥ 2\nand texts differ?", shape=diamond,
+          style=filled, fillcolor="#fff3e0", color="#ef6c00",
+          fontsize=11, margin="0.05,0.05"];
+
+    pair [width=2.9, label="Emit preference pair\nprompt = shared history · chosen = best\nrejected = worst",
+          fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.6];
+
+    skip [width=2.9, label="no pair this turn", shape=box, style="rounded,filled,dashed",
+          fillcolor="#fafafa", color="#9e9e9e", fontcolor="#757575"];
+
+    advance [width=3.6, label="Advance along best branch\n(winning turn + its patient reply)",
+             fillcolor="#e3f2fd", color="#1976d2"];
+
+    done [label="Session over?", shape=diamond,
+          style=filled, fillcolor="#ede7f6", color="#5e35b1",
+          fontsize=10, margin="0.03,0.03"];
+
+    out [width=3.6, label="~9 pairs / vignette × 100 vignettes → dpo_train.jsonl",
+         fillcolor="#e8f5e9", color="#2e7d32", penwidth=1.6];
+
+    start -> decision;
+    decision -> branch;
+    branch -> r1; branch -> r2; branch -> r3;
+    r1 -> judge; r2 -> judge; r3 -> judge;
+    judge -> gate;
+    gate -> pair [xlabel="yes ", fontcolor="#2e7d32"];
+    gate -> skip [xlabel=" no", fontcolor="#9e9e9e"];
+    pair -> advance;
+    skip -> advance;
+    advance -> done;
+    done -> decision [xlabel="no — next turn  ", fontcolor="#5e35b1",
+                      constraint=false, style=dashed, color="#5e35b1"];
+    done -> out [xlabel="yes ", fontcolor="#2e7d32"];
+}
